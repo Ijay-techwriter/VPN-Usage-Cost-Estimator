@@ -1,0 +1,147 @@
+// VPN data with provider links
+const vpnData = [
+    {
+        name: "NordVPN",
+        monthlyCost: 11.99,
+        yearlyCost: 59,
+        twoYearCost: 89,
+        devices: 6,
+        freeTrial: true,
+        moneyBackGuarantee: 30,
+        link: "https://go.nordvpn.net/aff_c?offer_id=15&aff_id=90197"
+    },
+    {
+        name: "ExpressVPN",
+        monthlyCost: 12.95,
+        yearlyCost: 99.95,
+        twoYearCost: 149.95,
+        devices: 5,
+        freeTrial: false,
+        moneyBackGuarantee: 30,
+        link: "https://www.expressvpn.com/"
+    },
+    {
+        name: "Surfshark",
+        monthlyCost: 12.95,
+        yearlyCost: 47.88,
+        twoYearCost: 59.76,
+        devices: Infinity,
+        freeTrial: true,
+        moneyBackGuarantee: 30,
+        link: "https://get.surfshark.net/aff_c?offer_id=926&aff_id=34209"
+    },
+    {
+        name: "ProtonVPN",
+        monthlyCost: 9.99,
+        yearlyCost: 71.88,
+        twoYearCost: 119.76,
+        devices: 10,
+        freeTrial: true,
+        moneyBackGuarantee: 30,
+        link: "https://protonvpn.com/"
+    },
+    {
+        name: "Private Internet Access (PIA)",
+        monthlyCost: 11.95,
+        yearlyCost: 39.95,
+        twoYearCost: 69.95,
+        devices: 10,
+        freeTrial: false,
+        moneyBackGuarantee: 30,
+        link: "https://www.privateinternetaccess.com/"
+    },
+    {
+        name: "IPVanish",
+        monthlyCost: 10.99,
+        yearlyCost: 44.99,
+        twoYearCost: 89.98,
+        devices: Infinity,
+        freeTrial: false,
+        moneyBackGuarantee: 30,
+        link: "https://www.ipvanish.com/"
+    }
+];
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('vpnForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            calculateCosts();
+        });
+    } else {
+        console.error('Form with id "vpnForm" not found');
+    }
+});
+
+function calculateCosts() {
+    const subscriptionType = document.getElementById('subscriptionType').value;
+    const budget = parseFloat(document.getElementById('budget').value);
+    const devices = parseInt(document.getElementById('devices').value);
+    const freeTrial = document.getElementById('freeTrial').checked;
+    const moneyBack = document.getElementById('moneyBack').checked;
+
+    console.log('Input values:', { subscriptionType, budget, devices, freeTrial, moneyBack });
+
+    const recommendations = vpnData.filter(vpn => {
+        let cost;
+        switch(subscriptionType) {
+            case 'monthly':
+                cost = vpn.monthlyCost;
+                break;
+            case 'yearly':
+                cost = vpn.yearlyCost / 12;
+                break;
+            case '2year':
+                cost = vpn.twoYearCost / 24;
+                break;
+        }
+        return cost <= budget && 
+               vpn.devices >= devices && 
+               (!freeTrial || vpn.freeTrial) && 
+               (!moneyBack || vpn.moneyBackGuarantee > 0);
+    });
+
+    console.log('Filtered recommendations:', recommendations);
+
+    displayResults(recommendations);
+}
+
+function displayResults(recommendations) {
+    const resultsDiv = document.getElementById('results');
+    const recommendationsDiv = document.getElementById('recommendations');
+    const tableBody = document.getElementById('comparisonTableBody');
+
+    if (!resultsDiv || !recommendationsDiv || !tableBody) {
+        console.error('One or more required elements not found');
+        return;
+    }
+
+    resultsDiv.classList.remove('hidden');
+    recommendationsDiv.innerHTML = '';
+    tableBody.innerHTML = '';
+
+    if (recommendations.length === 0) {
+        recommendationsDiv.innerHTML = '<p>No VPN providers match your criteria. Try adjusting your preferences.</p>';
+        return;
+    }
+
+    recommendationsDiv.innerHTML = '<p>Based on your preferences, we recommend:</p>';
+    recommendations.forEach(vpn => {
+        recommendationsDiv.innerHTML += `<p>${vpn.name} - Great option for ${vpn.devices === Infinity ? 'unlimited' : vpn.devices} devices!</p>`;
+    });
+
+    vpnData.forEach(vpn => {
+        const row = tableBody.insertRow();
+        row.innerHTML = `
+            <td>${vpn.name}</td>
+            <td>$${vpn.monthlyCost.toFixed(2)}</td>
+            <td>$${vpn.yearlyCost.toFixed(2)}</td>
+            <td>$${vpn.twoYearCost.toFixed(2)}</td>
+            <td>${vpn.devices === Infinity ? 'Unlimited' : vpn.devices}</td>
+            <td>${vpn.freeTrial ? 'Yes' : 'No'}</td>
+            <td>${vpn.moneyBackGuarantee} days</td>
+            <td><a href="${vpn.link}" target="_blank">Visit Website</a></td>
+        `;
+    });
+}
